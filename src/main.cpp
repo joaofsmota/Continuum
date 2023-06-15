@@ -10,53 +10,38 @@
 
 using namespace std;
 
-struct GLFWIntegration
-{
+#define glfw_window_ptr GLFWwindow* 
 
-	GLFWIntegration();
-	GLFWIntegration(const int win_width, const int win_height, const char* win_title, GLFWmonitor* monitor, GLFWwindow* share);
-	~GLFWIntegration();
-	void init(const int win_width, const int win_height, const char* win_title, GLFWmonitor* monitor, GLFWwindow* share);
-	inline void realease(void) {
-		this->~GLFWIntegration();
-	}
-	inline GLFWwindow* get_window(void){
-		return window; 
-	}
-private: 
-	GLFWwindow* window;
-};
-
-GLFWIntegration::GLFWIntegration()
-{
-	glfwInit();
-	window = NULL; 
-}
-GLFWIntegration::GLFWIntegration(const int win_width, const int win_height, const char* win_title, GLFWmonitor* monitor, GLFWwindow* share)
-{
-	glfwInit();
-	this->window = glfwCreateWindow(win_width, win_height, win_title, monitor, share);
-}
-GLFWIntegration::~GLFWIntegration()
-{
-	glfwDestroyWindow(window);
-	window = NULL;
-	glfwTerminate();
-}
-void GLFWIntegration::init(const int win_width, const int win_height, const char* win_title, GLFWmonitor* monitor, GLFWwindow* share)
-{
-	if (window == NULL) window = glfwCreateWindow(win_width, win_height, win_title, monitor, share);
-	else std::cout << "Failed to create glfw window, a glfw window already exists for this object" << std::endl;
-}
+static glfw_window_ptr window = NULL; 
+constexpr int WIN_WIDTH = 1200;
+constexpr int WIN_HEIGHT = 800;
 
 
 int main(int argc, char** argv)
 {
-	GLFWIntegration glfw_integration = GLFWIntegration(800, 800, "game2", nullptr, nullptr);
+	if (!glfwInit())
+	{
+		std::cout << "Failed to initialize glfw\n";
+		return -1;
+	}
 
-	glfw_integration.init(1200, 800, "game2", nullptr, nullptr);
+	glfw_window_ptr window = NULL;
 
-	glfw_integration.realease();
+	if (!(window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "game", nullptr, nullptr)))
+	{
+		glfwTerminate();
+		return -1;
+	}
+
+	bool quit = true;
+
+	while (!quit)
+	{
+
+	}
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
 
 	return 0;
 }
