@@ -1,6 +1,7 @@
 # $\Large \mathrm{game}$
+# Overview and high-level features
 
-# current/expected dependencies
+# Current/expected dependencies
 - glfw
 - glew
 - glm
