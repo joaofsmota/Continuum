@@ -22,6 +22,8 @@ endif()
 
 # TODO: Add tests and install targets if needed.
 
+include_directories(engine/submodules/glfw/deps)
+
 add_subdirectory(engine/submodules/glfw)
 add_subdirectory(engine/submodules/glew)
 
