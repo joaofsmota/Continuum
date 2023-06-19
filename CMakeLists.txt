@@ -13,8 +13,10 @@ project ("game")
 
 # Add source to this project's executable.
 add_executable (game "src/main.cpp"  
+"engine/core/ccore.h"
 "engine/core/graphics/ogl_fw/glslprogram.h" 
-"engine/core/graphics/ogl_fw/glslprogram.cpp")
+"engine/core/graphics/ogl_fw/glslprogram.cpp" 
+)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET game PROPERTY CXX_STANDARD 20)
@@ -22,15 +24,20 @@ endif()
 
 # TODO: Add tests and install targets if needed.
 
-include_directories(engine/submodules/glfw/deps)
+include_directories(engine)
+
+include_directories(engine/submodules/glfw/deps) # Only temporary
 
 add_subdirectory(engine/submodules/glfw)
 add_subdirectory(engine/submodules/glew)
+add_subdirectory(engine/submodules/glm)
 
 target_include_directories(game PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/engine/submodules/glfw/include)
 target_include_directories(game PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/engine/submodules/glew/include)
+target_include_directories(game PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/engine/submodules/glm/include)
 
 target_link_libraries(game 
 	glfw
 	libglew_static
+	glm::glm
 )

@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "core/ccore.h"
+
 static const struct
 {
     float x, y;
@@ -55,7 +57,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
     GLFWwindow* window;
     GLuint vertex_buffer, vertex_shader, fragment_shader, program;
