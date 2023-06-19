@@ -7,3 +7,6 @@
 [submodule "engine/submodules/glew"]
 	path = engine/submodules/glew
 	url = https://github.com/Perlmint/glew-cmake.git
+[submodule "engine/submodules/cglm"]
+	path = engine/submodules/cglm
+	url = https://github.com/recp/cglm.git
