@@ -81,16 +81,16 @@ namespace Continuum {
 
 			glm::vec3 accel(0.0f);
 
-			if (movement_.forward_) accel += forward;
-			if (movement_.backward_) accel -= forward;
+			if (MOVEMENT_.forward_) accel += forward;
+			if (MOVEMENT_.backward_) accel -= forward;
 
-			if (movement_.left_) accel -= right;
-			if (movement_.right_) accel += right;
+			if (MOVEMENT_.left_) accel -= right;
+			if (MOVEMENT_.right_) accel += right;
 
-			if (movement_.up_) accel += up;
-			if (movement_.down_) accel -= up;
+			if (MOVEMENT_.up_) accel += up;
+			if (MOVEMENT_.down_) accel -= up;
 
-			if (movement_.fastSpeed_) accel *= this->fast_coef_;
+			if (MOVEMENT_.fast_speed_) accel *= this->fast_coef_;
 
 			if (accel == glm::vec3(0))
 			{
@@ -101,7 +101,7 @@ namespace Continuum {
 			{
 				// acceleration
 				this->move_speed_ += accel * acceleration_ * static_cast<float>(delta_sec);
-				const float maxSpeed = movement_.fastSpeed_ ? this->max_speed_ * this->fast_coef_ : this->max_speed_;
+				const float maxSpeed = MOVEMENT_.fast_speed_ ? this->max_speed_ * this->fast_coef_ : this->max_speed_;
 				if (glm::length(this->move_speed_) > maxSpeed) this->move_speed_= glm::normalize(this->move_speed_) * maxSpeed;
 			}
 
@@ -141,8 +141,8 @@ namespace Continuum {
 			bool up_ = false;
 			bool down_ = false;
 			//
-			bool fastSpeed_ = false;
-		} movement_;
+			bool fast_speed_ = false;
+		} MOVEMENT_;
 	public:
 		float mouse_speed_ = 4.0f;
 		float acceleration_ = 150.0f;
@@ -157,7 +157,7 @@ namespace Continuum {
 		glm::vec3 up_ = glm::vec3(0.0f, 0.0f, 1.0f);
 	};
 	
-	struct CameraPositioner_move_to_t final : CameraPositionerInterface
+	struct CameraPositioner_move_to_t final : public CameraPositionerInterface
 	{
 		CameraPositioner_move_to_t(const glm::vec3& camera_pos, const glm::vec3& angles)
 			: position_current_(camera_pos)

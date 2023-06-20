@@ -33,6 +33,13 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
+Continuum::CameraPositioner_first_person_t positioner(
+    glm::vec3(0.0f, 0.5f, 0.0f),
+    glm::vec3(0.0f, 0.0f, -1.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f)
+);
+Continuum::camera_t camera(positioner);
+
 int main(int argc, char** argv)
 {
     GLFWwindow* window;
@@ -133,5 +140,6 @@ int main(int argc, char** argv)
     glfwDestroyWindow(window);
 
     glfwTerminate();
+
     exit(EXIT_SUCCESS);
 }
