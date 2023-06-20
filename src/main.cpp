@@ -33,12 +33,19 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-Continuum::CameraPositionerOrb positioner(
+static Continuum::CameraPositionerOrb positioner(
     glm::vec3(0.0f, 0.5f, 0.0f),
     glm::vec3(0.0f, 0.0f, -1.0f),
     glm::vec3(0.0f, 1.0f, 0.0f)
 );
-Continuum::camera_t camera(positioner);
+static Continuum::camera_t camera(positioner);
+
+struct mouse_state_t
+{
+    glm::vec2 pos = glm::vec2(0.0f);
+    bool pressed_left = false;
+    bool pressed_right = false;
+} mouse_state;
 
 int main(int argc, char** argv)
 {
@@ -109,6 +116,56 @@ int main(int argc, char** argv)
 //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     test_program.validate();
+
+    glfwSetCursorPosCallback(
+        window,
+        [](auto* window, double x, double y)
+        {
+            int width, height;
+            glfwGetFramebufferSize(window, &width, &height);
+            mouse_state.pos.x = static_cast<float>(x / width);
+            mouse_state.pos.y = static_cast<float>(y / height);
+        }
+    );
+
+    glfwSetMouseButtonCallback(
+        window,
+        [](auto* window, int button, int action, int mods)
+        {
+            if (button == GLFW_MOUSE_BUTTON_LEFT)
+                mouse_state.pressed_left = action == GLFW_PRESS;
+        }
+    );
+
+    glfwSetMouseButtonCallback(
+        window,
+        [](auto* window, int button, int action, int mods)
+        {
+            if (button == GLFW_MOUSE_BUTTON_RIGHT)
+                mouse_state.pressed_right = action == GLFW_PRESS;
+        }
+    );
+
+    glfwSetKeyCallback(
+        window,
+        [](GLFWwindow* window, int key, int scancode, int action, int mods)
+        {
+            const bool pressed = action != GLFW_RELEASE;
+            if (key == GLFW_KEY_ESCAPE && pressed) glfwSetWindowShouldClose(window, GLFW_TRUE);
+            // Proc Camera Movement
+            if (key == GLFW_KEY_W) positioner.MOVEMENT_.forward_ = pressed;
+            if (key == GLFW_KEY_S) positioner.MOVEMENT_.backward_ = pressed;
+            if (key == GLFW_KEY_A) positioner.MOVEMENT_.left_ = pressed;
+            if (key == GLFW_KEY_D) positioner.MOVEMENT_.right_ = pressed;
+            if (key == GLFW_KEY_1) positioner.MOVEMENT_.up_ = pressed;
+            if (key == GLFW_KEY_2) positioner.MOVEMENT_.down_ = pressed;
+            if (mods & GLFW_MOD_SHIFT) positioner.MOVEMENT_.fast_speed_ = pressed;
+            if (key == GLFW_KEY_SPACE) positioner.set_up_vector(glm::vec3(0.0f, 1.0f, 0.0f));
+        }
+    );
+
+    double timeStamp = glfwGetTime();
+    float deltaSeconds = 0.0f;
 
     while (!glfwWindowShouldClose(window))
     {
