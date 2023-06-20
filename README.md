@@ -8,3 +8,4 @@ The Continuum engine is dedicated to implementing the algorithms outlined in the
 - glfw
 - glew
 - glm
+- cglm

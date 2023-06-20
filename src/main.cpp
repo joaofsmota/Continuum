@@ -1,48 +1,24 @@
 ﻿// game.cpp : Defines the entry point for the application.
 //
+#include "core/ccore.h"
 
 #include <iostream>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
-#include "linmath.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "core/ccore.h"
-
-static const struct
-{
-    float x, y;
-    float r, g, b;
-} vertices[3] =
-{
-    { -0.6f, -0.4f, 1.f, 0.f, 0.f },
-    {  0.6f, -0.4f, 0.f, 1.f, 0.f },
-    {   0.f,  0.6f, 0.f, 0.f, 1.f }
-};
-
 static const char* vertex_shader_text = R"GLSL(
-		#version 110
-		uniform mat4 MVP;
-        attribute vec3 vCol;
-        attribute vec2 vPos;
-        varying vec3 color;
+		#version 330 core
+        layout (location = 0) in vec3 aPos;
 		void main()
 		{
-			gl_Position = MVP * vec4(vPos, 0.0, 1.0);
-            color = vCol;
+			gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
 		}
 	)GLSL";
 
 static const char* fragment_shader_text = R"GLSL(
-		#version 110
-		varying vec3 color;
+		#version 330 core
+		out vec4 FragColor;
 		void main()
 		{
-			gl_FragColor = vec4(color, 1.0);
+			FragColor = vec4(1.0f, 1.0f, 0.2f, 1.0f);
 		}
 	)GLSL";
 
@@ -60,16 +36,17 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 int main(int argc, char** argv)
 {
     GLFWwindow* window;
-    GLuint vertex_buffer, vertex_shader, fragment_shader, program;
-    GLint mvp_location, vpos_location, vcol_location;
+    GLuint VBO, VAO;
+    Continuum::Graphics::glsl_program_t test_program = Continuum::Graphics::glsl_program_t();
 
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = glfwCreateWindow(1200, 800, "Simple example", NULL, NULL);
     if (!window)
@@ -91,41 +68,47 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    // NOTE: OpenGL error checks have been omitted for brevity
+    test_program.compile_shader(vertex_shader_text, Continuum::Graphics::GLSLShader::VERTEX, NULL);
+    test_program.compile_shader(fragment_shader_text, Continuum::Graphics::GLSLShader::FRAGMENT, NULL);
+    test_program.link();
 
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // ------------------------------------------------------------------
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f, // left  
+         0.5f, -0.5f, 0.0f, // right 
+         0.0f,  0.5f, 0.0f  // top   
+    };
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
-    glCompileShader(vertex_shader);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
-    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
-    glCompileShader(fragment_shader);
+    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    program = glCreateProgram();
-    glAttachShader(program, vertex_shader);
-    glAttachShader(program, fragment_shader);
-    glLinkProgram(program);
+    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+    glBindVertexArray(0);
 
-    mvp_location = glGetUniformLocation(program, "MVP");
-    vpos_location = glGetAttribLocation(program, "vPos");
-    vcol_location = glGetAttribLocation(program, "vCol");
+    // uncomment this call to draw in wireframe polygons.
+//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    glEnableVertexAttribArray(vpos_location);
-    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
-        sizeof(vertices[0]), (void*)0);
-    glEnableVertexAttribArray(vcol_location);
-    glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-        sizeof(vertices[0]), (void*)(sizeof(float) * 2));
+    test_program.validate();
 
     while (!glfwWindowShouldClose(window))
     {
         float ratio;
         int width, height;
-        mat4x4 m, p, mvp;
+
+
 
         glfwGetFramebufferSize(window, &width, &height);
         ratio = width / (float)height;
@@ -133,18 +116,19 @@ int main(int argc, char** argv)
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        mat4x4_identity(m);
-        mat4x4_rotate_Z(m, m, (float)glfwGetTime());
-        mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        mat4x4_mul(mvp, p, m);
 
-        glUseProgram(program);
-        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)mvp);
+
+        test_program.use();
+        glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    test_program.~glsl_program_t();
 
     glfwDestroyWindow(window);
 

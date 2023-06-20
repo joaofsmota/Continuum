@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <vector>
 
+using namespace Continuum::Graphics;
+
 namespace GLSLShaderInfo {
 	std::map<std::string, GLSLShader::GLSLShaderType> extensions = {
 		{".vs",   GLSLShader::GLSLShaderType::VERTEX},
@@ -205,27 +207,27 @@ void glsl_program_t::use(void) const
 	glUseProgram(handle);
 }
 
-inline GLint glsl_program_t::get_handle(void) const
+GLint glsl_program_t::get_handle(void) const
 {
 	return handle;
 }
 
-inline bool glsl_program_t::is_linked(void) const
+bool glsl_program_t::is_linked(void) const
 {
 	return linked;
 }
 
-inline void glsl_program_t::bind_attrib_loc(const GLuint location, const char* name) const
+void glsl_program_t::bind_attrib_loc(const GLuint location, const char* name) const
 {
 	glBindAttribLocation(handle, location, name);
 }
 
-inline void glsl_program_t::bind_frag_data_loc(const GLuint location, const char* name) const
+void glsl_program_t::bind_frag_data_loc(const GLuint location, const char* name) const
 {
 	glBindFragDataLocation(handle, location, name);
 }
 
-inline void glsl_program_t::set_uniform(const char* name, const float x, const float y, const float z)
+void glsl_program_t::set_uniform(const char* name, const float x, const float y, const float z)
 {
 	const GLint loc = get_uniform_location(name);
 	glUniform3f(loc, x, y, z);
@@ -245,7 +247,7 @@ void glsl_program_t::set_uniform(const char* name, const glm::vec3& v)
 void glsl_program_t::set_uniform(const char* name, const glm::vec4& v)
 {
 	const GLint loc = get_uniform_location(name);
-	glUniform2f(loc, v.x, v.y);
+	glUniform4f(loc, v.x, v.y, v.z, v.w);
 }
 
 void glsl_program_t::set_uniform(const char* name, const glm::mat4& m)
@@ -427,9 +429,18 @@ const char* glsl_program_t::get_attrib_type_string_form(const GLenum type) const
 	}
 }
 
-inline GLint glsl_program_t::get_uniform_location(const char* name)
+GLint glsl_program_t::get_uniform_location(const char* name)
 {
-	return uniform_locations[name];
+	const auto pos = uniform_locations.find(name);
+
+	if (pos == uniform_locations.end())
+	{
+		const GLint loc = glGetUniformLocation(handle, name);
+		uniform_locations[name] = loc;
+		return loc;
+	}
+
+	return pos->second;
 }
 
 void glsl_program_t::detach_delete_shader_objects(void)
