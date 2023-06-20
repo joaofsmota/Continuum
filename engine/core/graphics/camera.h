@@ -8,7 +8,7 @@
 
 namespace Continuum {
 
-	struct MathUtils {
+	struct AngleProcUtils {
 		static inline float clip_angle(const float d)
 		{
 			if (d < -180.0f) return d + 360.0f;
@@ -171,14 +171,14 @@ namespace Continuum {
 			this->position_current_ += this->damping_linear_ * delta_sec * (this->position_desired_ - this->position_current_);
 
 			// normalization is required to avoid "spinning" around the object 2pi times
-			this->angles_current_ = MathUtils::clip_angles(this->angles_current_);
-			this->angles_desired_= MathUtils::clip_angles(this->angles_desired_);
+			this->angles_current_ = AngleProcUtils::clip_angles(this->angles_current_);
+			this->angles_desired_= AngleProcUtils::clip_angles(this->angles_desired_);
 
 			// update angles
-			this->angles_current_ -= MathUtils::angle_delta(this->angles_current_, this->angles_desired_) * this->damping_euler_angles_* delta_sec;
+			this->angles_current_ -= AngleProcUtils::angle_delta(this->angles_current_, this->angles_desired_) * this->damping_euler_angles_* delta_sec;
 
 			// normalize new angles
-			this->angles_current_ = MathUtils::clip_angles(this->angles_current_);
+			this->angles_current_ = AngleProcUtils::clip_angles(this->angles_current_);
 
 			const glm::vec3 a = glm::radians(this->angles_current_);
 
