@@ -17,7 +17,7 @@ add_executable (game "src/main.cpp"
  "engine/core/graphics/ogl_fw/glslprogram.h" 
  "engine/core/graphics/ogl_fw/glslprogram.cpp" 
   
- )
+  "engine/core/graphics/camera.h" )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET game PROPERTY CXX_STANDARD 20)
