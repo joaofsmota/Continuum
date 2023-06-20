@@ -33,7 +33,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-Continuum::CameraPositioner_first_person_t positioner(
+Continuum::CameraPositionerOrb positioner(
     glm::vec3(0.0f, 0.5f, 0.0f),
     glm::vec3(0.0f, 0.0f, -1.0f),
     glm::vec3(0.0f, 1.0f, 0.0f)

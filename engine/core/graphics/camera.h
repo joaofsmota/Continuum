@@ -52,10 +52,10 @@ namespace Continuum {
 		const CameraPositionerInterface* positioner_; 
 	};
 
-	struct CameraPositioner_first_person_t final : public CameraPositionerInterface
+	struct CameraPositionerOrb final : public CameraPositionerInterface
 	{
-		CameraPositioner_first_person_t() = default;
-		CameraPositioner_first_person_t(const glm::vec3& camera_pos, const glm::vec3& target, const glm::vec3& up)
+		CameraPositionerOrb() = default;
+		CameraPositionerOrb(const glm::vec3& camera_pos, const glm::vec3& target, const glm::vec3& up)
 			: camera_position_(camera_pos)
 			, camera_orientation_(glm::lookAt(camera_pos, target, up))
 			, up_(up)
@@ -157,9 +157,9 @@ namespace Continuum {
 		glm::vec3 up_ = glm::vec3(0.0f, 0.0f, 1.0f);
 	};
 	
-	struct CameraPositioner_move_to_t final : public CameraPositionerInterface
+	struct CameraPositionerUI final : public CameraPositionerInterface
 	{
-		CameraPositioner_move_to_t(const glm::vec3& camera_pos, const glm::vec3& angles)
+		CameraPositionerUI(const glm::vec3& camera_pos, const glm::vec3& angles)
 			: position_current_(camera_pos)
 			, position_desired_(camera_pos)
 			, angles_current_(angles)
