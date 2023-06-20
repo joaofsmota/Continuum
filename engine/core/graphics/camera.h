@@ -46,8 +46,8 @@ namespace Continuum {
 		camera_t(const camera_t&) = default;
 		camera_t& operator = (const camera_t&) = default;
 	public:
-		inline glm::mat4 getViewMatrix() const { return positioner_->get_view_matrix(); }
-		inline glm::vec3 getPosition() const { return positioner_->get_position(); }
+		inline glm::mat4 get_view_matrix() const { return positioner_->get_view_matrix(); }
+		inline glm::vec3 get_position() const { return positioner_->get_position(); }
 	private:
 		const CameraPositionerInterface* positioner_; 
 	};
@@ -55,9 +55,9 @@ namespace Continuum {
 	struct CameraPositioner_first_person_t final : public CameraPositionerInterface
 	{
 		CameraPositioner_first_person_t() = default;
-		CameraPositioner_first_person_t(const glm::vec3& camera_position, const glm::vec3& target, const glm::vec3& up)
-			: camera_position_(camera_position)
-			, camera_orientation_(glm::lookAt(camera_position, target, up))
+		CameraPositioner_first_person_t(const glm::vec3& camera_pos, const glm::vec3& target, const glm::vec3& up)
+			: camera_position_(camera_pos)
+			, camera_orientation_(glm::lookAt(camera_pos, target, up))
 			, up_(up)
 		{}
 	public:
@@ -65,13 +65,13 @@ namespace Continuum {
 
 			if (mouse_pressed)
 			{
-				const glm::vec2 delta = mouse_pos - this->mouse_pos_;
-				const glm::quat deltaQuat = glm::quat(glm::vec3(-this->mouse_speed_ * delta.y, this->mouse_speed_ * delta.x, 0.0f));
-				this->camera_orientation_ = deltaQuat * this->camera_orientation_;
+				const glm::vec2 delta = mouse_pos - this->mouse_position_;
+				const glm::quat delta_quat = glm::quat(glm::vec3(-this->mouse_speed_ * delta.y, this->mouse_speed_ * delta.x, 0.0f));
+				this->camera_orientation_ = delta_quat * this->camera_orientation_;
 				this->camera_orientation_ = glm::normalize(this->camera_orientation_);
 				set_up_vector(this->up_);
 			}
-			this->mouse_pos_ = mouse_pos;
+			this->mouse_position_ = mouse_pos;
 
 			const glm::mat4 v = glm::mat4_cast(this->camera_orientation_);
 
@@ -120,7 +120,7 @@ namespace Continuum {
 		}
 	public:
 		void set_position(const glm::vec3& camera_pos) { this->camera_position_ = camera_pos; }
-		void reset_mouse_position(const glm::vec2& mouse_pos) { this->mouse_pos_ = mouse_pos; };
+		void reset_mouse_position(const glm::vec2& mouse_pos) { this->mouse_position_ = mouse_pos; };
 		void set_up_vector(const glm::vec3& up)
 		{
 			const glm::mat4 view = get_view_matrix();
@@ -150,7 +150,7 @@ namespace Continuum {
 		float max_speed_ = 10.0f;
 		float fast_coef_ = 10.0f;
 	private:
-		glm::vec2 mouse_pos_ = glm::vec2(0);
+		glm::vec2 mouse_position_ = glm::vec2(0);
 		glm::vec3 camera_position_ = glm::vec3(0.0f, 10.0f, 10.0f);
 		glm::quat camera_orientation_ = glm::quat(glm::vec3(0));
 		glm::vec3 move_speed_ = glm::vec3(0.0f);
