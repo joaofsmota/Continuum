@@ -11,7 +11,9 @@
 #include <stdexcept>
 
 namespace Continuum {
+
     namespace Graphics {
+
         struct GLSLProgramException : public std::runtime_error {
             GLSLProgramException(const std::string& msg) :
                 std::runtime_error(msg) {}
@@ -78,6 +80,8 @@ namespace Continuum {
             bool linked;
             std::map<std::string, GLint> uniform_locations;
         };
+
     }
+
 }
 #endif
