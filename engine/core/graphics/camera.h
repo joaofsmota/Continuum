@@ -101,8 +101,8 @@ namespace Continuum {
 			{
 				// acceleration
 				this->move_speed_ += accel * acceleration_ * static_cast<float>(delta_sec);
-				const float maxSpeed = MOVEMENT_.fast_speed_ ? this->max_speed_ * this->fast_coef_ : this->max_speed_;
-				if (glm::length(this->move_speed_) > maxSpeed) this->move_speed_= glm::normalize(this->move_speed_) * maxSpeed;
+				const float max_speed = MOVEMENT_.fast_speed_ ? this->max_speed_ * this->fast_coef_ : this->max_speed_;
+				if (glm::length(this->move_speed_) > max_speed) this->move_speed_= glm::normalize(this->move_speed_) * max_speed;
 			}
 
 			this->camera_position_ += this->move_speed_ * static_cast<float>(delta_sec);
