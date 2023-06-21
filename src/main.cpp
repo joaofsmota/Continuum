@@ -33,23 +33,34 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-static Continuum::CameraPositionerOrb positioner(
-    glm::vec3(0.0f, 0.5f, 0.0f),
-    glm::vec3(0.0f, 0.0f, -1.0f),
-    glm::vec3(0.0f, 1.0f, 0.0f)
-);
-static Continuum::camera_t camera(positioner);
+//= Continuum::Camera::OrbCameraPositioner(
+//    glm::vec3(0.0f, 0.5f, 0.0f),
+//    glm::vec3(0.0f, 0.0f, -1.0f),
+//    glm::vec3(0.0f, 1.0f, 0.0f)
+//);
 
-struct mouse_state_t
-{
-    glm::vec2 pos = glm::vec2(0.0f);
-    bool pressed_left = false;
-    bool pressed_right = false;
-} mouse_state;
+struct GlobalState {
+    GLFWwindow* window = NULL;
+    Continuum::Camera::OrbCameraPositioner positioner;
+    struct mouse_state_t
+    {
+        glm::vec2 pos = glm::vec2(0.0f);
+        bool pressed_left = false;
+        bool pressed_right = false;
+    } mouse_state;
+} app;
 
 int main(int argc, char** argv)
 {
-    GLFWwindow* window;
+
+    app.positioner = Continuum::Camera::OrbCameraPositioner(
+         glm::vec3(0.0f, 0.5f, 0.0f),
+         glm::vec3(0.0f, 0.0f, -1.0f),
+         glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+
+    Continuum::Camera::camera_t camera(app.positioner);
+
     GLuint VBO, VAO;
     Continuum::Graphics::glsl_program_t test_program = Continuum::Graphics::glsl_program_t();
 
@@ -62,16 +73,16 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(1200, 800, "Simple example", NULL, NULL);
-    if (!window)
+    app.window = glfwCreateWindow(1200, 800, "Simple example", NULL, NULL);
+    if (!app.window)
     {
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
 
-    glfwSetKeyCallback(window, key_callback);
+    glfwSetKeyCallback(app.window, key_callback);
 
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(app.window);
     glfwSwapInterval(1);
 
     GLenum err = glewInit();
@@ -118,63 +129,63 @@ int main(int argc, char** argv)
     test_program.validate();
 
     glfwSetCursorPosCallback(
-        window,
+        app.window,
         [](auto* window, double x, double y)
         {
             int width, height;
             glfwGetFramebufferSize(window, &width, &height);
-            mouse_state.pos.x = static_cast<float>(x / width);
-            mouse_state.pos.y = static_cast<float>(y / height);
+            app.mouse_state.pos.x = static_cast<float>(x / width);
+            app.mouse_state.pos.y = static_cast<float>(y / height);
         }
     );
 
     glfwSetMouseButtonCallback(
-        window,
+        app.window,
         [](auto* window, int button, int action, int mods)
         {
             if (button == GLFW_MOUSE_BUTTON_LEFT)
-                mouse_state.pressed_left = action == GLFW_PRESS;
+                app.mouse_state.pressed_left = action == GLFW_PRESS;
         }
     );
 
     glfwSetMouseButtonCallback(
-        window,
+        app.window,
         [](auto* window, int button, int action, int mods)
         {
             if (button == GLFW_MOUSE_BUTTON_RIGHT)
-                mouse_state.pressed_right = action == GLFW_PRESS;
+                app.mouse_state.pressed_right = action == GLFW_PRESS;
         }
     );
 
     glfwSetKeyCallback(
-        window,
+        app.window,
         [](GLFWwindow* window, int key, int scancode, int action, int mods)
         {
             const bool pressed = action != GLFW_RELEASE;
             if (key == GLFW_KEY_ESCAPE && pressed) glfwSetWindowShouldClose(window, GLFW_TRUE);
             // Proc Camera Movement
-            if (key == GLFW_KEY_W) positioner.MOVEMENT_.forward_ = pressed;
-            if (key == GLFW_KEY_S) positioner.MOVEMENT_.backward_ = pressed;
-            if (key == GLFW_KEY_A) positioner.MOVEMENT_.left_ = pressed;
-            if (key == GLFW_KEY_D) positioner.MOVEMENT_.right_ = pressed;
-            if (key == GLFW_KEY_1) positioner.MOVEMENT_.up_ = pressed;
-            if (key == GLFW_KEY_2) positioner.MOVEMENT_.down_ = pressed;
-            if (mods & GLFW_MOD_SHIFT) positioner.MOVEMENT_.fast_speed_ = pressed;
-            if (key == GLFW_KEY_SPACE) positioner.set_up_vector(glm::vec3(0.0f, 1.0f, 0.0f));
+            if (key == GLFW_KEY_W) app.positioner.MOVEMENT_.forward_ = pressed;
+            if (key == GLFW_KEY_S) app.positioner.MOVEMENT_.backward_ = pressed;
+            if (key == GLFW_KEY_A) app.positioner.MOVEMENT_.left_ = pressed;
+            if (key == GLFW_KEY_D) app.positioner.MOVEMENT_.right_ = pressed;
+            if (key == GLFW_KEY_1) app.positioner.MOVEMENT_.up_ = pressed;
+            if (key == GLFW_KEY_2) app.positioner.MOVEMENT_.down_ = pressed;
+            if (mods & GLFW_MOD_SHIFT) app.positioner.MOVEMENT_.fast_speed_ = pressed;
+            if (key == GLFW_KEY_SPACE) app.positioner.set_up_vector(glm::vec3(0.0f, 1.0f, 0.0f));
         }
     );
 
     double timeStamp = glfwGetTime();
     float deltaSeconds = 0.0f;
 
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(app.window))
     {
         float ratio;
         int width, height;
 
 
 
-        glfwGetFramebufferSize(window, &width, &height);
+        glfwGetFramebufferSize(app.window, &width, &height);
         ratio = width / (float)height;
 
         glViewport(0, 0, width, height);
@@ -186,7 +197,7 @@ int main(int argc, char** argv)
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(app.window);
         glfwPollEvents();
     }
 
@@ -194,7 +205,7 @@ int main(int argc, char** argv)
     glDeleteBuffers(1, &VBO);
     test_program.~glsl_program_t();
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(app.window);
 
     glfwTerminate();
 
