@@ -30,7 +30,7 @@ namespace Continuum {
 		}
 	};
 
-	namespace Camera {
+	struct Camera {
 
 		struct CameraPositionerInterface
 		{
@@ -208,7 +208,7 @@ namespace Continuum {
 			glm::mat4 current_transform_ = glm::mat4(1.0f);
 		};
 
-	}
+	};
 
 }
 #endif 

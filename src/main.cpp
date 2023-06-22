@@ -52,18 +52,6 @@ struct GlobalState {
 
 int main(int argc, char** argv)
 {
-
-    app.positioner = Continuum::Camera::OrbCameraPositioner(
-         glm::vec3(0.0f, 0.5f, 0.0f),
-         glm::vec3(0.0f, 0.0f, -1.0f),
-         glm::vec3(0.0f, 1.0f, 0.0f)
-    );
-
-    Continuum::Camera::camera_t camera(app.positioner);
-
-    GLuint VBO, VAO;
-    Continuum::Graphics::glsl_program_t test_program = Continuum::Graphics::glsl_program_t();
-
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit())
@@ -92,6 +80,17 @@ int main(int argc, char** argv)
         glfwTerminate();
         return -1;
     }
+
+    app.positioner = Continuum::Camera::OrbCameraPositioner(
+        glm::vec3(0.0f, 0.5f, 0.0f),
+        glm::vec3(0.0f, 0.0f, -1.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+
+    Continuum::Camera::camera_t camera(app.positioner);
+
+    GLuint VBO, VAO;
+    Continuum::Graphics::glsl_program_t test_program = Continuum::Graphics::glsl_program_t();
 
     test_program.compile_shader(vertex_shader_text, Continuum::Graphics::GLSLShader::VERTEX, NULL);
     test_program.compile_shader(fragment_shader_text, Continuum::Graphics::GLSLShader::FRAGMENT, NULL);
