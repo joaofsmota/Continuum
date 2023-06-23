@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <sys/stat.h>
 #include <vector>
 
@@ -132,6 +133,7 @@ void glsl_program_t::compile_shader(const std::string& shader_source, const GLSL
 			glGetShaderInfoLog(shader_handle, length, &written, &log[0]);
 			msg += log;
 		}
+		std::cout << msg << std::endl;
 		throw GLSLProgramException(msg);
 	}
 	else

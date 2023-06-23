@@ -33,12 +33,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-//= Continuum::Camera::OrbCameraPositioner(
-//    glm::vec3(0.0f, 0.5f, 0.0f),
-//    glm::vec3(0.0f, 0.0f, -1.0f),
-//    glm::vec3(0.0f, 1.0f, 0.0f)
-//);
-
 struct GlobalState {
     GLFWwindow* window = NULL;
     Continuum::Camera::OrbCameraPositioner positioner;
@@ -50,15 +44,27 @@ struct GlobalState {
     } mouse_state;
 } app;
 
+namespace Renderer {
+
+    struct PerFrameData
+    {
+        glm::mat4 view = {};
+        glm::mat4 proj = {};
+        glm::vec4 cam_pos = {};
+    };
+
+}
+
 int main(int argc, char** argv)
 {
+
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     app.window = glfwCreateWindow(1200, 800, "Simple example", NULL, NULL);
@@ -89,43 +95,27 @@ int main(int argc, char** argv)
 
     Continuum::Camera::camera_t camera(app.positioner);
 
-    GLuint VBO, VAO;
-    Continuum::Graphics::glsl_program_t test_program = Continuum::Graphics::glsl_program_t();
+    const GLsizeiptr k_uniform_buffer_size = sizeof(Renderer::PerFrameData);
 
-    test_program.compile_shader(vertex_shader_text, Continuum::Graphics::GLSLShader::VERTEX, NULL);
-    test_program.compile_shader(fragment_shader_text, Continuum::Graphics::GLSLShader::FRAGMENT, NULL);
-    test_program.link();
+    GLuint per_frame_data_buffer;
+    glCreateBuffers(1, &per_frame_data_buffer);
+    glNamedBufferStorage(per_frame_data_buffer, k_uniform_buffer_size, NULL, GL_DYNAMIC_STORAGE_BIT);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, per_frame_data_buffer, 0, k_uniform_buffer_size);
 
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    float vertices[] = {
-        -0.5f, -0.5f, 0.0f, // left  
-         0.5f, -0.5f, 0.0f, // right 
-         0.0f,  0.5f, 0.0f  // top   
-    };
+    GLuint vao;
+    glCreateVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    Continuum::Graphics::glsl_program_t grid_prog = Continuum::Graphics::glsl_program_t();
 
-    glBindVertexArray(VAO);
+    grid_prog.compile_shader("C:/work/dev/game/shader/grid/grid.vert");
+    grid_prog.compile_shader("C:/work/dev/game/shader/grid/grid.frag");
+    grid_prog.link();
+    grid_prog.validate();
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    glBindVertexArray(0);
-
-    // uncomment this call to draw in wireframe polygons.
-//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    test_program.validate();
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glfwSetCursorPosCallback(
         app.window,
@@ -174,35 +164,41 @@ int main(int argc, char** argv)
         }
     );
 
-    double timeStamp = glfwGetTime();
-    float deltaSeconds = 0.0f;
+    double time_stamp = glfwGetTime();
+    float delta_seconds = 0.0f;
 
     while (!glfwWindowShouldClose(app.window))
     {
-        float ratio;
+        app.positioner.update(delta_seconds, app.mouse_state.pos, app.mouse_state.pressed_left);
+
+        const double new_time_stamp = glfwGetTime();
+        delta_seconds = static_cast<float>(new_time_stamp - time_stamp);
+        time_stamp = new_time_stamp;
+
         int width, height;
-
-
-
         glfwGetFramebufferSize(app.window, &width, &height);
-        ratio = width / (float)height;
+        const float ratio = width / (float)height;
 
         glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        const glm::mat4 p = glm::perspective(45.0f, ratio, 0.1f, 1000.0f);
+        const glm::mat4 view = camera.get_view_matrix();
 
+        const Renderer::PerFrameData per_frame_data = { .view = view, .proj = p, .cam_pos = glm::vec4(camera.get_position(), 1.0f) };
+        glNamedBufferSubData(per_frame_data_buffer, 0, k_uniform_buffer_size, &per_frame_data);
 
-        test_program.use();
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        grid_prog.use();
+        glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, 1, 0);
 
         glfwSwapBuffers(app.window);
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    test_program.~glsl_program_t();
+    glDeleteBuffers(1, &per_frame_data_buffer);
+    glDeleteVertexArrays(1, &vao);
+
+    grid_prog.~glsl_program_t();
 
     glfwDestroyWindow(app.window);
 
