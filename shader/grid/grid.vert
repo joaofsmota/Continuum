@@ -28,19 +28,19 @@ layout(std430, binding = 2) restrict readonly buffer Matrices
 };
 
 // extents of grid in world coordinates
-float grid_size = 100.0;
+float grid_size = 1.0;
 
 // size of one cell
-float gridCellSize = 0.025;
+float grid_cell_size = 0.00025;
 
 // color of thin lines
-vec4 gridColorThin = vec4(0.5, 0.5, 0.5, 1.0);
+vec4 grid_color_thin = vec4(0.5, 0.5, 0.5, 1.0);
 
 // color of thick lines (every tenth line)
-vec4 gridColorThick = vec4(0.0, 0.0, 0.0, 1.0);
+vec4 grid_color_thick = vec4(0.0, 0.0, 0.0, 1.0);
 
 // minimum number of pixels between cell lines before LOD switch should occur. 
-const float gridMinPixelsBetweenCells = 2.0;
+const float grid_min_pixel_between_cells = 2.0;
 
 const vec3 pos[4] = vec3[4](
 	vec3(-1.0, 0.0, -1.0),
@@ -63,8 +63,9 @@ void main()
 	int idx = indices[gl_VertexID];
 	vec3 position = pos[idx] * grid_size;
 	
-	position.x += cam_pos.x;
-	position.z += cam_pos.z;
+	// gird moves withn camera
+	//position.x += cam_pos.x;
+	//position.z += cam_pos.z;
 
 	out_cam_pos = cam_pos.xz;
 

@@ -67,7 +67,7 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    app.window = glfwCreateWindow(1200, 800, "Simple example", NULL, NULL);
+    app.window = glfwCreateWindow(1200, 800, "Continuum Engine", NULL, NULL);
     if (!app.window)
     {
         glfwTerminate();
@@ -132,17 +132,12 @@ int main(int argc, char** argv)
         app.window,
         [](auto* window, int button, int action, int mods)
         {
-            if (button == GLFW_MOUSE_BUTTON_LEFT)
-                app.mouse_state.pressed_left = action == GLFW_PRESS;
-        }
-    );
-
-    glfwSetMouseButtonCallback(
-        app.window,
-        [](auto* window, int button, int action, int mods)
-        {
-            if (button == GLFW_MOUSE_BUTTON_RIGHT)
-                app.mouse_state.pressed_right = action == GLFW_PRESS;
+            if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+                app.mouse_state.pressed_right = (action == GLFW_PRESS);
+            }
+            if (button == GLFW_MOUSE_BUTTON_LEFT) {
+                app.mouse_state.pressed_left = (action == GLFW_PRESS);
+            }
         }
     );
 
@@ -167,7 +162,9 @@ int main(int argc, char** argv)
     double time_stamp = glfwGetTime();
     float delta_seconds = 0.0f;
 
-    while (!glfwWindowShouldClose(app.window))
+    app.positioner.max_speed_ = 0.01 * app.positioner.max_speed_;
+     
+    while (!glfwWindowShouldClose(app.window)) 
     {
         app.positioner.update(delta_seconds, app.mouse_state.pos, app.mouse_state.pressed_left);
 

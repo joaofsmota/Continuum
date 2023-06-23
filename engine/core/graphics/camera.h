@@ -68,7 +68,7 @@ namespace Continuum {
 				if (mouse_pressed)
 				{
 					const glm::vec2 delta = mouse_pos - this->mouse_position_;
-					const glm::quat delta_quat = glm::quat(glm::vec3(-this->mouse_speed_ * delta.y, this->mouse_speed_ * delta.x, 0.0f));
+					const glm::quat delta_quat = glm::quat(glm::vec3(this->mouse_speed_ * delta.y, this->mouse_speed_ * delta.x, 0.0f));
 					this->camera_orientation_ = delta_quat * this->camera_orientation_;
 					this->camera_orientation_ = glm::normalize(this->camera_orientation_);
 					set_up_vector(this->up_);
