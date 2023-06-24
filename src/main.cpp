@@ -88,7 +88,7 @@ int main(int argc, char** argv)
     }
 
     app.positioner = Continuum::Camera::OrbCameraPositioner(
-        glm::vec3(0.0f, 0.5f, 0.0f),
+        glm::vec3(0.0f, 0.5f, -2.0f),
         glm::vec3(0.0f, 0.0f, -1.0f),
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
@@ -162,8 +162,10 @@ int main(int argc, char** argv)
     double time_stamp = glfwGetTime();
     float delta_seconds = 0.0f;
 
-    app.positioner.max_speed_ = 0.01 * app.positioner.max_speed_;
-     
+    app.positioner.max_speed_ = 0.4 * app.positioner.max_speed_;
+    app.positioner.acceleration_ = 10.f;
+    app.positioner.fast_coef_ = 1.5f; 
+
     while (!glfwWindowShouldClose(app.window)) 
     {
         app.positioner.update(delta_seconds, app.mouse_state.pos, app.mouse_state.pressed_left);
@@ -175,7 +177,7 @@ int main(int argc, char** argv)
         int width, height;
         glfwGetFramebufferSize(app.window, &width, &height);
         const float ratio = width / (float)height;
-
+        
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
